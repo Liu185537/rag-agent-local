@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+
+# Virtual environments
+.venv/
+venv/
+
+# Local config
+.env
+
+# Data artifacts
+data/chroma/
+data/rag_agent.db
+data/uploads/
+*.log
+

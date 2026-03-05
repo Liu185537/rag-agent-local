@@ -1,0 +1,698 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Knowledge Playground</title>
+    <style>
+      :root {
+        --wechat-green: #16c37f;
+        --wechat-green-dark: #0ea76a;
+        --wechat-bg: #f5f7fb;
+        --wechat-white: #ffffff;
+        --wechat-text-primary: #1f2d3d;
+        --wechat-text-secondary: #6b7785;
+        --wechat-border: #dde4ec;
+        --wechat-shadow: rgba(22, 72, 125, 0.08);
+      }
+
+      body {
+        margin: 0;
+        background: var(--wechat-bg);
+        color: var(--wechat-text-primary);
+        font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      }
+
+      .knowledge-wrapper {
+        width: 100%;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .knowledge-header {
+        width: 100%;
+        background: linear-gradient(135deg, var(--wechat-green) 0%, var(--wechat-green-dark) 100%);
+        color: #fff;
+        padding: 20px 24px 26px;
+        box-sizing: border-box;
+      }
+      .header-content {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      .header-content h2 {
+        margin: 0 0 8px;
+        font-size: 30px;
+        letter-spacing: 0.3px;
+      }
+      .header-content p {
+        margin: 0;
+        opacity: 0.92;
+        font-size: 15px;
+      }
+
+      .main-area {
+        width: 100%;
+        max-width: 1200px;
+        margin-top: -10px;
+        padding: 0 16px 20px;
+        box-sizing: border-box;
+        flex: 1;
+        min-height: 0;
+      }
+      .chat-layout {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        gap: 14px;
+        height: calc(100vh - 160px);
+        min-height: 580px;
+      }
+      .left-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        min-height: 0;
+      }
+      .uploader-card,
+      .memory-card,
+      .chat-panel {
+        background: var(--wechat-white);
+        border: 1px solid var(--wechat-border);
+        border-radius: 12px;
+        box-shadow: 0 4px 12px var(--wechat-shadow);
+      }
+      .uploader-card,
+      .memory-card {
+        padding: 12px;
+      }
+      .uploader-card h3,
+      .memory-card h3 {
+        margin: 0 0 6px;
+        font-size: 16px;
+      }
+      .sub {
+        margin: 0 0 8px;
+        font-size: 12px;
+        color: var(--wechat-text-secondary);
+      }
+
+      .upload-drop {
+        border: 2px dashed #b7c6d9;
+        border-radius: 10px;
+        padding: 16px;
+        text-align: center;
+        background: #fafcff;
+        cursor: pointer;
+      }
+      .upload-drop:hover {
+        border-color: var(--wechat-green);
+      }
+      .upload-actions {
+        margin-top: 8px;
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .progress {
+        width: 100%;
+        height: 8px;
+        background: #edf2f8;
+        border-radius: 999px;
+        overflow: hidden;
+        margin-top: 10px;
+        display: none;
+      }
+      .progress > div {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(120deg, var(--wechat-green), var(--wechat-green-dark));
+        transition: width 0.25s ease;
+      }
+
+      .memory-list {
+        list-style: none;
+        padding: 0;
+        margin: 8px 0 0;
+        max-height: 200px;
+        overflow: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .memory-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 6px;
+        padding: 6px 8px;
+        border: 1px solid var(--wechat-border);
+        border-radius: 8px;
+        font-size: 13px;
+      }
+      .memory-item .name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 190px;
+      }
+      .memory-actions {
+        margin-top: 8px;
+      }
+
+      .chat-panel {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+      }
+      .tab-header {
+        display: flex;
+        gap: 8px;
+        padding: 8px 8px 0;
+        border-bottom: 1px solid var(--wechat-border);
+      }
+      .tab-btn {
+        border: 1px solid var(--wechat-border);
+        border-bottom: none;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+        padding: 8px 12px;
+        background: #f6f9fd;
+        cursor: pointer;
+      }
+      .tab-btn.active {
+        background: #fff;
+        color: var(--wechat-green-dark);
+        font-weight: 700;
+      }
+
+      .chat-window {
+        flex: 1;
+        min-height: 0;
+        overflow: auto;
+        padding: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        background: #fbfdff;
+      }
+      .msg {
+        display: flex;
+        gap: 8px;
+      }
+      .msg.user {
+        flex-direction: row-reverse;
+      }
+      .avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--wechat-green) 0%, var(--wechat-green-dark) 100%);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        font-weight: 700;
+      }
+      .bubble {
+        max-width: 75%;
+        border: 1px solid var(--wechat-border);
+        border-radius: 10px;
+        padding: 10px 12px;
+        background: #fff;
+        box-shadow: 0 2px 7px rgba(0, 0, 0, 0.04);
+      }
+      .msg.user .bubble {
+        background: #e9fff4;
+        border-color: #c9efd9;
+      }
+      .attachments {
+        margin-top: 7px;
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      .attachment-pill {
+        border: 1px solid var(--wechat-border);
+        border-radius: 999px;
+        font-size: 12px;
+        padding: 2px 8px;
+        background: #f3f6fb;
+      }
+
+      .chat-input {
+        padding: 12px;
+        border-top: 1px solid var(--wechat-border);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        background: #fff;
+      }
+      .input-actions {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      textarea,
+      input,
+      select {
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid var(--wechat-border);
+        border-radius: 8px;
+        padding: 8px 10px;
+        font-size: 14px;
+      }
+      textarea {
+        resize: vertical;
+        min-height: 64px;
+      }
+      button {
+        border: 1px solid transparent;
+        border-radius: 8px;
+        background: linear-gradient(120deg, var(--wechat-green), var(--wechat-green-dark));
+        color: white;
+        padding: 8px 12px;
+        cursor: pointer;
+        font-weight: 600;
+      }
+      button.secondary {
+        background: #f3f6fa;
+        color: #2b4258;
+        border-color: var(--wechat-border);
+      }
+      .status {
+        font-size: 12px;
+        color: var(--wechat-text-secondary);
+        margin-top: 6px;
+        min-height: 16px;
+      }
+      .select-row {
+        display: flex;
+        gap: 8px;
+      }
+      .select-row > * {
+        flex: 1;
+      }
+      .config-panel {
+        padding: 14px;
+        overflow: auto;
+        min-height: 0;
+      }
+      .form-row {
+        margin-bottom: 10px;
+      }
+      .form-row label {
+        display: block;
+        font-size: 13px;
+        color: var(--wechat-text-secondary);
+        margin-bottom: 4px;
+      }
+      .config-actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      @media (max-width: 900px) {
+        .chat-layout {
+          grid-template-columns: 1fr;
+          height: auto;
+          min-height: auto;
+        }
+        .chat-panel {
+          min-height: 560px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="knowledge-wrapper">
+      <div class="knowledge-header">
+        <div class="header-content">
+          <h2>智能体 · 知识库对话</h2>
+          <p>上传资料、维护知识库、与本地 RAG-Agent 连续对话。</p>
+        </div>
+      </div>
+
+      <div class="main-area">
+        <div class="chat-layout">
+          <div class="left-panel">
+            <div class="uploader-card">
+              <h3>知识资料上传</h3>
+              <p class="sub">支持 txt/md/csv/json/pdf/docx。可一次选择多个文件。</p>
+              <label>Namespace</label>
+              <input id="namespaceInput" value="demo" />
+              <div class="upload-drop" onclick="document.getElementById('uploadFiles').click()">
+                拖拽文件到此处，或点击选择文件
+              </div>
+              <input id="uploadFiles" type="file" multiple style="display:none" onchange="onPickFiles(event)" />
+              <div id="pendingList" class="sub" style="margin-top:8px;"></div>
+              <div class="upload-actions">
+                <button onclick="ingestFiles()">学习这些资料</button>
+                <button class="secondary" onclick="clearPending()">清空待上传</button>
+              </div>
+              <div class="progress" id="ingestProgress"><div id="progressBar"></div></div>
+              <div id="uploadStatus" class="status"></div>
+            </div>
+
+            <div class="memory-card">
+              <h3>已上传文件</h3>
+              <p class="sub">选择一个文件作为当前对话参考重点。</p>
+              <div class="select-row">
+                <select id="selectedFile"></select>
+                <button class="secondary" onclick="deleteSelectedFile()">删除</button>
+              </div>
+              <ul id="uploadedList" class="memory-list"></ul>
+              <div class="memory-actions">
+                <button class="secondary" onclick="clearUploadedFiles()">清空文件</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="chat-panel">
+            <div class="tab-header">
+              <button id="tabChat" class="tab-btn active" onclick="switchTab('chat')">对话</button>
+              <button id="tabConfig" class="tab-btn" onclick="switchTab('config')">配置</button>
+            </div>
+
+            <div id="chatTab" style="display:flex;flex-direction:column;flex:1;min-height:0;">
+              <div class="chat-window" id="chatWindow"></div>
+              <div class="chat-input">
+                <textarea id="chatInput" placeholder="请输入问题或指令..."></textarea>
+                <div class="input-actions">
+                  <div>
+                    <input id="quickAttach" type="file" multiple onchange="onAttachFiles(event)" />
+                    <div id="attachStatus" class="status"></div>
+                  </div>
+                  <div>
+                    <button class="secondary" onclick="clearSession()">新会话</button>
+                    <button onclick="sendChat()">发送</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div id="configTab" class="config-panel" style="display:none;">
+              <div class="form-row">
+                <label>智能体名称</label>
+                <input id="agentName" maxlength="40" placeholder="例如：销售顾问" />
+              </div>
+              <div class="form-row">
+                <label>描述</label>
+                <textarea id="agentDesc" rows="3" maxlength="120" placeholder="一句话描述该智能体"></textarea>
+              </div>
+              <div class="form-row">
+                <label>指令（行为规则）</label>
+                <textarea id="agentInst" rows="10" placeholder="- 回答结构化&#10;- 先给结论后给依据&#10;- 信息不足先追问"></textarea>
+              </div>
+              <div class="config-actions">
+                <button onclick="saveAgentConfig()">保存配置</button>
+                <button class="secondary" onclick="resetAgentConfig()">重置</button>
+              </div>
+              <div id="configStatus" class="status"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const defaultAssistantMsg = "你好，我是你的知识库智能体。可先上传资料再开始提问。";
+      let pendingFiles = [];
+      let attachedFiles = [];
+      let sessionId = null;
+
+      function getNamespace() {
+        return (document.getElementById("namespaceInput").value || "demo").trim();
+      }
+
+      function getFilesKey() {
+        return "knowledge_files_" + getNamespace();
+      }
+
+      function getAgentConfigFromInputs() {
+        return {
+          name: document.getElementById("agentName").value || "知识库助手",
+          description: document.getElementById("agentDesc").value || "",
+          instructions: document.getElementById("agentInst").value || "",
+        };
+      }
+
+      function saveUploadedFiles(items) {
+        localStorage.setItem(getFilesKey(), JSON.stringify(items.slice(0, 300)));
+      }
+
+      function loadUploadedFiles() {
+        try {
+          return JSON.parse(localStorage.getItem(getFilesKey()) || "[]");
+        } catch {
+          return [];
+        }
+      }
+
+      function refreshUploadedUI() {
+        const files = loadUploadedFiles();
+        const ul = document.getElementById("uploadedList");
+        const select = document.getElementById("selectedFile");
+        ul.innerHTML = "";
+        select.innerHTML = "";
+        if (!files.length) {
+          ul.innerHTML = "<li class='sub'>暂无已上传文件</li>";
+          return;
+        }
+        files.forEach((f, idx) => {
+          const li = document.createElement("li");
+          li.className = "memory-item";
+          li.innerHTML = "<span class='name'>" + escapeHtml(f.name) + "</span><span>" + (f.chunks || 0) + " chunks</span>";
+          ul.appendChild(li);
+          const op = document.createElement("option");
+          op.value = f.name;
+          op.textContent = f.name;
+          if (idx === 0) op.selected = true;
+          select.appendChild(op);
+        });
+      }
+
+      function onPickFiles(event) {
+        pendingFiles = Array.from(event.target.files || []);
+        document.getElementById("pendingList").textContent =
+          pendingFiles.length ? "待上传: " + pendingFiles.map(f => f.name).join("、") : "未选择文件";
+      }
+
+      function clearPending() {
+        pendingFiles = [];
+        document.getElementById("uploadFiles").value = "";
+        document.getElementById("pendingList").textContent = "未选择文件";
+      }
+
+      async function ingestFiles() {
+        const status = document.getElementById("uploadStatus");
+        if (!pendingFiles.length) {
+          status.textContent = "请先选择文件。";
+          return;
+        }
+        const namespace = getNamespace();
+        const progress = document.getElementById("ingestProgress");
+        const bar = document.getElementById("progressBar");
+        progress.style.display = "block";
+        status.textContent = "上传中...";
+
+        const uploaded = loadUploadedFiles();
+        for (let i = 0; i < pendingFiles.length; i++) {
+          const file = pendingFiles[i];
+          const fd = new FormData();
+          fd.append("namespace", namespace);
+          fd.append("file", file);
+          fd.append("doc_id", file.name.replace(/\\.[^/.]+$/, ""));
+          const resp = await fetch("/api/v1/knowledge/upload", { method: "POST", body: fd });
+          const data = await resp.json();
+          if (!resp.ok) {
+            status.textContent = "上传失败: " + (data.detail || JSON.stringify(data));
+            progress.style.display = "none";
+            return;
+          }
+          const item = { name: file.name, size: file.size, type: file.type, chunks: data.ingested_chunks || 0 };
+          if (!uploaded.some(x => x.name === item.name)) uploaded.unshift(item);
+          bar.style.width = (((i + 1) / pendingFiles.length) * 100).toFixed(1) + "%";
+        }
+        saveUploadedFiles(uploaded);
+        refreshUploadedUI();
+        clearPending();
+        setTimeout(() => {
+          progress.style.display = "none";
+          bar.style.width = "0%";
+        }, 600);
+        status.textContent = "上传并入库完成。";
+      }
+
+      function deleteSelectedFile() {
+        const select = document.getElementById("selectedFile");
+        const name = select.value;
+        if (!name) return;
+        const next = loadUploadedFiles().filter(f => f.name !== name);
+        saveUploadedFiles(next);
+        refreshUploadedUI();
+      }
+
+      function clearUploadedFiles() {
+        saveUploadedFiles([]);
+        refreshUploadedUI();
+      }
+
+      function switchTab(tab) {
+        document.getElementById("tabChat").classList.toggle("active", tab === "chat");
+        document.getElementById("tabConfig").classList.toggle("active", tab === "config");
+        document.getElementById("chatTab").style.display = tab === "chat" ? "flex" : "none";
+        document.getElementById("configTab").style.display = tab === "config" ? "block" : "none";
+      }
+
+      function addMessage(role, content, files) {
+        const chatWindow = document.getElementById("chatWindow");
+        const msg = document.createElement("div");
+        msg.className = "msg " + role;
+        const avatar = role === "user" ? "我" : "智";
+        const safeContent = escapeHtml(content || "");
+        const fileHtml = files && files.length
+          ? "<div class='attachments'>" + files.map(f => "<div class='attachment-pill'>" + escapeHtml(f.name) + "</div>").join("") + "</div>"
+          : "";
+        msg.innerHTML = "<div class='avatar'>" + avatar + "</div><div class='bubble'><div>" + safeContent.replace(/\\n/g, "<br>") + "</div>" + fileHtml + "</div>";
+        chatWindow.appendChild(msg);
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+      }
+
+      function onAttachFiles(event) {
+        attachedFiles = Array.from(event.target.files || []).map(f => ({ name: f.name, size: f.size, type: f.type }));
+        document.getElementById("attachStatus").textContent = attachedFiles.length
+          ? "已附加: " + attachedFiles.map(f => f.name).join("、")
+          : "";
+      }
+
+      async function fetchAgentConfig() {
+        const namespace = encodeURIComponent(getNamespace());
+        try {
+          const resp = await fetch("/api/v1/agent-config?namespace=" + namespace);
+          const data = await resp.json();
+          if (!resp.ok) throw new Error(data.detail || "load config failed");
+          return data.config || { name: "知识库助手", description: "", instructions: "" };
+        } catch {
+          return { name: "知识库助手", description: "", instructions: "" };
+        }
+      }
+
+      async function saveAgentConfig() {
+        const status = document.getElementById("configStatus");
+        status.textContent = "保存中...";
+        const cfg = getAgentConfigFromInputs();
+        const payload = {
+          namespace: getNamespace(),
+          name: cfg.name,
+          description: cfg.description,
+          instructions: cfg.instructions,
+        };
+        const resp = await fetch("/api/v1/agent-config", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = await resp.json();
+        if (!resp.ok) {
+          status.textContent = "保存失败: " + (data.detail || JSON.stringify(data));
+          return;
+        }
+        status.textContent = "配置已保存到后端。";
+      }
+
+      async function resetAgentConfig() {
+        const status = document.getElementById("configStatus");
+        status.textContent = "重置中...";
+        const namespace = encodeURIComponent(getNamespace());
+        const resp = await fetch("/api/v1/agent-config?namespace=" + namespace, { method: "DELETE" });
+        const data = await resp.json();
+        if (!resp.ok) {
+          status.textContent = "重置失败: " + (data.detail || JSON.stringify(data));
+          return;
+        }
+        await hydrateConfig();
+        status.textContent = "已重置为默认配置。";
+      }
+
+      async function hydrateConfig() {
+        const cfg = await fetchAgentConfig();
+        document.getElementById("agentName").value = cfg.name || "知识库助手";
+        document.getElementById("agentDesc").value = cfg.description || "";
+        document.getElementById("agentInst").value = cfg.instructions || "";
+      }
+
+      function clearSession() {
+        sessionId = null;
+        document.getElementById("chatWindow").innerHTML = "";
+        addMessage("assistant", defaultAssistantMsg, []);
+      }
+
+      async function sendChat() {
+        const input = document.getElementById("chatInput");
+        const question = (input.value || "").trim();
+        if (!question) return;
+        const selected = document.getElementById("selectedFile").value;
+        const cfg = getAgentConfigFromInputs();
+        const prefix = cfg.instructions ? "[Agent Instructions]\\n" + cfg.instructions + "\\n\\n" : "";
+        const refFile = selected ? "\\n[Reference File] " + selected : "";
+        const messageToModel = prefix + question + refFile;
+
+        addMessage("user", question, attachedFiles);
+        addMessage("assistant", "思考中...", []);
+        const thinkingNode = document.getElementById("chatWindow").lastChild;
+
+        const payload = { namespace: getNamespace(), message: messageToModel };
+        if (sessionId) payload.session_id = sessionId;
+        const resp = await fetch("/api/v1/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = await resp.json();
+
+        if (thinkingNode) thinkingNode.remove();
+        if (!resp.ok) {
+          addMessage("assistant", "请求失败: " + (data.detail || JSON.stringify(data)), []);
+          return;
+        }
+        sessionId = data.session_id || sessionId;
+        const cits = (data.citations || []).map(x => ({ name: (x.doc_id || "doc") + " · " + (x.chunk_id || "") }));
+        addMessage("assistant", data.answer || "", cits);
+
+        input.value = "";
+        attachedFiles = [];
+        document.getElementById("quickAttach").value = "";
+        document.getElementById("attachStatus").textContent = "";
+      }
+
+      function escapeHtml(str) {
+        return String(str)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#39;");
+      }
+
+      document.getElementById("namespaceInput").addEventListener("change", () => {
+        refreshUploadedUI();
+        hydrateConfig();
+        clearSession();
+      });
+
+      async function bootstrap() {
+        refreshUploadedUI();
+        await hydrateConfig();
+        clearSession();
+        clearPending();
+      }
+
+      bootstrap();
+    </script>
+  </body>
+</html>
