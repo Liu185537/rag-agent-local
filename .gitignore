@@ -17,5 +17,8 @@ venv/
 data/chroma/
 data/rag_agent.db
 data/uploads/
+data/test_runs/
+data/pytest_tmp/
+eval/reports/
+pytest-cache-files-*/
 *.log
-

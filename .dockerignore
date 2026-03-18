@@ -7,5 +7,8 @@ __pycache__/
 *.log
 data/chroma/
 data/rag_agent.db
+data/pytest_tmp/
+pytest_tmp/
+pytest-cache-files-*/
 eval/reports/
 

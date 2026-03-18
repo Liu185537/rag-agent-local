@@ -5,6 +5,7 @@ from dataclasses import dataclass
 
 
 def tokenize(text: str) -> list[str]:
+    """轻量分词：优先英文/数字 token，兜底按非空字符切分。"""
     tokens = re.findall(r"[A-Za-z0-9_]+", text.lower())
     if tokens:
         return tokens
@@ -20,15 +21,17 @@ class RerankSignal:
 
 
 class LightweightReranker:
-    """
-    A local reranker that combines:
-    - semantic score from vector retrieval
-    - lexical BM25 score
-    - RRF fused score
-    - token coverage between query and chunk
+    """本地轻量重排器。
+
+    组合四类信号：
+    1. 向量语义分；
+    2. BM25 词法分；
+    3. RRF 融合分；
+    4. 查询词覆盖率。
     """
 
     def score(self, query: str, chunk_text: str, semantic: float, bm25: float, fused: float) -> RerankSignal:
+        """计算单个候选分块的基础重排信号。"""
         q = set(tokenize(query))
         c = set(tokenize(chunk_text))
         coverage = len(q & c) / max(1, len(q))
@@ -40,6 +43,10 @@ class LightweightReranker:
         )
 
     def combine(self, signal: RerankSignal, bm25_max: float) -> float:
+        """将多路信号加权为最终重排分。
+
+        这里会先做 BM25 归一化，避免不同语料规模导致分值量级偏差。
+        """
         bm25_norm = signal.bm25_score / bm25_max if bm25_max > 0 else 0.0
         return (
             0.40 * signal.semantic_score

@@ -7,11 +7,19 @@ from threading import Lock
 
 
 def utc_now() -> str:
+    """返回当前 UTC 时间戳（ISO 格式）。"""
     return datetime.now(timezone.utc).isoformat()
 
 
 @dataclass
 class MetricsCollector:
+    """进程内轻量指标收集器。
+
+    说明：
+    - 使用内存计数，适合本地演示和小规模服务；
+    - 使用线程锁，避免并发请求下计数不一致。
+    """
+
     total_requests: int = 0
     total_errors: int = 0
     total_latency_ms: float = 0.0
@@ -23,6 +31,7 @@ class MetricsCollector:
         self._lock = Lock()
 
     def record(self, path: str, status_code: int, latency_ms: float) -> None:
+        """记录一次请求的路径、状态码和耗时。"""
         with self._lock:
             self.total_requests += 1
             if status_code >= 500:
@@ -33,6 +42,7 @@ class MetricsCollector:
             self.last_updated_at = utc_now()
 
     def snapshot(self) -> dict[str, object]:
+        """返回当前指标快照，供 API 与 Dashboard 使用。"""
         with self._lock:
             avg_latency = (
                 self.total_latency_ms / self.total_requests if self.total_requests else 0.0

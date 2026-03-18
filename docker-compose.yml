@@ -5,16 +5,20 @@ services:
     ports:
       - "8008:8008"
     environment:
-      RAG_AGENT_ENV: dev
+      RAG_AGENT_ENV: ${RAG_AGENT_ENV:-dev}
       RAG_AGENT_HOST: 0.0.0.0
-      RAG_AGENT_PORT: 8008
+      RAG_AGENT_PORT: ${RAG_AGENT_PORT:-8008}
       RAG_AGENT_SQLITE_PATH: /app/data/rag_agent.db
       RAG_AGENT_CHROMA_PATH: /app/data/chroma
-      RAG_AGENT_LLM_PROVIDER: ollama
+      RAG_AGENT_LLM_PROVIDER: ${RAG_AGENT_LLM_PROVIDER:-siliconflow}
       # If you run Ollama on the host machine:
-      RAG_AGENT_OLLAMA_BASE_URL: http://host.docker.internal:11434
-      RAG_AGENT_OLLAMA_CHAT_MODEL: qwen2.5:7b-instruct
-      RAG_AGENT_OLLAMA_EMBED_MODEL: nomic-embed-text
+      RAG_AGENT_OLLAMA_BASE_URL: ${RAG_AGENT_OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      RAG_AGENT_OLLAMA_CHAT_MODEL: ${RAG_AGENT_OLLAMA_CHAT_MODEL:-qwen2.5:7b-instruct}
+      RAG_AGENT_OLLAMA_EMBED_MODEL: ${RAG_AGENT_OLLAMA_EMBED_MODEL:-nomic-embed-text}
+      RAG_AGENT_SILICONFLOW_BASE_URL: ${RAG_AGENT_SILICONFLOW_BASE_URL:-https://api.siliconflow.cn/v1}
+      RAG_AGENT_SILICONFLOW_API_KEY: ${RAG_AGENT_SILICONFLOW_API_KEY:-}
+      RAG_AGENT_SILICONFLOW_CHAT_MODEL: ${RAG_AGENT_SILICONFLOW_CHAT_MODEL:-Qwen/Qwen2.5-7B-Instruct}
+      RAG_AGENT_SILICONFLOW_EMBED_MODEL: ${RAG_AGENT_SILICONFLOW_EMBED_MODEL:-BAAI/bge-m3}
     volumes:
       - ./data:/app/data
       - ./eval:/app/eval

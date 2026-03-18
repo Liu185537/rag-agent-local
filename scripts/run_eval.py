@@ -11,6 +11,13 @@ import requests
 
 
 def load_dataset(dataset_path: Path) -> list[dict]:
+    """读取 JSONL 评测集。
+
+    每行一个样本对象，典型字段：
+    - question
+    - expected_keywords
+    - expected_doc_id
+    """
     rows = []
     with dataset_path.open("r", encoding="utf-8") as f:
         for line in f:
@@ -22,6 +29,7 @@ def load_dataset(dataset_path: Path) -> list[dict]:
 
 
 def main() -> None:
+    """运行评测并输出控制台摘要 + JSON/CSV 报告。"""
     parser = argparse.ArgumentParser(description="Run evaluation for local RAG-Agent with report output.")
     parser.add_argument("--base-url", default="http://127.0.0.1:8008")
     parser.add_argument("--dataset", default="eval/dataset.jsonl")
@@ -40,6 +48,7 @@ def main() -> None:
     if total == 0:
         raise SystemExit("Dataset is empty.")
 
+    # 评测指标计数器。
     keyword_hits = 0
     citation_hits = 0
     retrieval_hits = 0
@@ -48,6 +57,7 @@ def main() -> None:
     details: list[dict] = []
 
     for idx, row in enumerate(data, start=1):
+        # ===== 1) 聊天接口评测（答案质量、引用覆盖、延迟） =====
         question = row["question"]
         expected_keywords = [kw.lower() for kw in row.get("expected_keywords", [])]
         expected_doc_id = row.get("expected_doc_id")
@@ -77,6 +87,7 @@ def main() -> None:
         if citation_doc_hit:
             citation_doc_hits += 1
 
+        # ===== 2) 纯检索接口评测（检索命中） =====
         retrieve_payload = {"query": question, "namespace": args.namespace, "top_k": args.top_k}
         retrieve_resp = requests.post(
             f"{args.base_url}/api/v1/retrieve", json=retrieve_payload, timeout=60
@@ -110,8 +121,10 @@ def main() -> None:
         )
 
     def pct(x: int) -> float:
+        """把计数转换为百分比。"""
         return (x / total * 100.0) if total else 0.0
 
+    # 分位延迟：反映典型与尾部响应时间。
     latencies_sorted = sorted(latencies_ms)
     p50 = latencies_sorted[int(0.5 * (len(latencies_sorted) - 1))]
     p90 = latencies_sorted[int(0.9 * (len(latencies_sorted) - 1))]
@@ -146,6 +159,7 @@ def main() -> None:
             "p95": round(p95, 3),
         },
     }
+    # 同时输出 JSON（完整结构）与 CSV（便于表格分析）。
     report_payload = {"summary": summary, "details": details}
     report_json.write_text(json.dumps(report_payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
